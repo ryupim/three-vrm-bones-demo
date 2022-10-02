@@ -1,0 +1,33 @@
+{
+    "name": "three-vrm-demo",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "webpack --mode=production",
+        "watch": "webpack --mode=production --watch --config ./webpack.config.js",
+        "start": "webpack-cli serve --mode development"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/three": "^0.143.1",
+        "ts-loader": "^9.3.1",
+        "typescript": "^4.7.4",
+        "webpack-cli": "^4.10.0",
+        "webpack-dev-server": "^4.11.1"
+    },
+    "dependencies": {
+        "@mediapipe/pose": "^0.5.1635988162",
+        "@pixiv/three-vrm": "^0.6.11",
+        "@tensorflow-models/pose-detection": "^2.0.0",
+        "@tensorflow/tfjs": "^3.20.0",
+        "@tensorflow/tfjs-backend-webgl": "^3.20.0",
+        "@tensorflow/tfjs-converter": "^3.20.0",
+        "@tensorflow/tfjs-core": "^3.20.0",
+        "install": "^0.13.0",
+        "three": "^0.143.0",
+        "webpack": "^5.74.0"
+    }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>three-vrm example</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <style>
+            body {
+                margin: 0;
+            }
+            canvas {
+                display: block;
+            }
+            #motion {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                color: white;
+            }
+            #webacamCanvas {
+                transform: rotateY(180deg);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="vrm"></div>
+        <div id="motion">
+            <div id="loading-indicator">PoseNet model is loading.</div>
+            <canvas id="webacamCanvas" width="480" height="320"></canvas>
+            <video
+                id="video"
+                width="480"
+                height="320"
+                style="display: none"
+                autoplay
+                playsinline
+            >
+                Video stream not available.
+            </video>
+        </div>
+        <!-- <canvas id="myCanvas"></canvas> -->
+        <script src="bundle.js"></script>
+    </body>
+</html>
