@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-import { VRM, VRMHumanoid, VRMSchema } from '@pixiv/three-vrm';
+import { VRM, VRMHumanBoneName, VRMHumanoid, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import * as posedetection from '@tensorflow-models/pose-detection';
 
 window.addEventListener("DOMContentLoaded", init);
@@ -32,9 +32,9 @@ function detectAndDraw(net: posedetection.PoseDetector) {
     });
 }
 
-function drawKeypoints(pose: { keypoints: any[] }) {
-    console.log("pose.keypoints", pose.keypoints);
+const modelUrl = "./models/van-kun.vrm";
 
+function drawKeypoints(pose: { keypoints: any[] }) {
     //TODO: fix inaccurate value of x & y
     pose.keypoints.forEach(
         (keypoint: { score: number; name: string; x: number; y: number }) => {
@@ -146,22 +146,29 @@ async function init() {
     let currentVrm: undefined | VRM = undefined;
     const loader = new GLTFLoader();
     loader.crossOrigin = "anonymous";
+
+    loader.register((parser) => {
+        return new VRMLoaderPlugin(parser);
+    });
+
     loader.load(
-        "./models/van-kun.vrm",
+        modelUrl,
         (gltf) => {
-            VRM.from(gltf).then((vrm) => {
-                scene.add(vrm.scene);
-                currentVrm = vrm;
+            const vrm = gltf.userData.vrm;
 
-                const boneNode = vrm.humanoid?.getBoneNode(
-                    VRMSchema.HumanoidBoneName.Hips
-                );
-                if (boneNode !== null && boneNode !== undefined) {
-                    boneNode.rotation.y = Math.PI;
-                }
+            VRMUtils.removeUnnecessaryVertices(gltf.scene);
+            VRMUtils.removeUnnecessaryJoints(gltf.scene);
 
-                console.log("boneNode", boneNode);
-            });
+            console.log("vrm", vrm);
+            scene.add(vrm.scene);
+            currentVrm = vrm;
+
+            const boneNode = vrm.humanoid?.getNormalizedBoneNode(
+                VRMHumanBoneName.Hips
+            );
+            if (boneNode !== null && boneNode !== undefined) {
+                boneNode.rotation.y = Math.PI;
+            }
         },
         (progress) =>
             console.log(
@@ -195,10 +202,11 @@ async function init() {
                     if (angle !== null) {
                         angle = angle * -1;
                         angleStore.Spine = angle;
-                        // if (currentVrm.humanoid.getBoneNode !== null)
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.Spine
-                        );
+                        // if (currentVrm.humanoid.getNormalizedBoneNode !== null)
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.Spine
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
@@ -215,9 +223,10 @@ async function init() {
                         angle = angle * -1;
                         angleStore.Neck = angle;
                         angle = angle - (angleStore.Spine || 0);
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.Neck
-                        );
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.Neck
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
@@ -235,9 +244,10 @@ async function init() {
                         angle = Math.PI - angle;
                         angleStore.RightUpperArm = angle;
                         angle = angle - (angleStore.Spine || 0);
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.RightUpperArm
-                        );
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.RightUpperArm
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
@@ -255,9 +265,10 @@ async function init() {
                         angle = Math.PI - angle;
                         angleStore.RightLowerArm = angle;
                         angle = angle - (angleStore.RightUpperArm || 0);
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.RightLowerArm
-                        );
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.RightLowerArm
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
@@ -275,9 +286,10 @@ async function init() {
                         angle = angle * -1;
                         angleStore.LeftUpperArm = angle;
                         angle = angle - (angleStore.Spine || 0);
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.LeftUpperArm
-                        );
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.LeftUpperArm
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
@@ -295,9 +307,10 @@ async function init() {
                         angle = angle * -1;
                         angleStore.LeftLowerArm = angle;
                         angle = angle - (angleStore.LeftUpperArm || 0);
-                        const getNode = currentVrm.humanoid?.getBoneNode(
-                            VRMSchema.HumanoidBoneName.LeftLowerArm
-                        );
+                        const getNode =
+                            currentVrm.humanoid?.getNormalizedBoneNode(
+                                VRMHumanBoneName.LeftLowerArm
+                            );
                         if (getNode) {
                             getNode.rotation.z = angle;
                         }
