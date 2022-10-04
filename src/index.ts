@@ -2,6 +2,7 @@ import '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
 import '@mediapipe/pose';
 
+import { Pose } from 'kalidokit';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -9,9 +10,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMHumanBoneName, VRMHumanoid, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import * as posedetection from '@tensorflow-models/pose-detection';
 
+import { setPoseNodeBlaze } from './setPoseNodeBlaze';
+
 window.addEventListener("DOMContentLoaded", init);
 
 let poseStore: any = {};
+let VRMposeStore: any = {};
+
 const webcamCanvas = document.getElementById(
     "webacamCanvas"
 ) as HTMLCanvasElement;
@@ -28,7 +33,13 @@ function detectAndDraw(net: posedetection.PoseDetector) {
     net.estimatePoses(video, {
         flipHorizontal: false,
     }).then(function (pose: any) {
-        drawKeypoints(pose[0]);
+        // console.log("pose[0]", pose[0]);
+        console.log("pose[0].keypoints3D", pose[0].keypoints3D);
+        console.log("pose[0].keypoints", pose[0].keypoints);
+
+        VRMposeStore = Pose.solve(pose[0].keypoints3D, pose[0].keypoints);
+        console.log("VRMposeStore", VRMposeStore);
+        // drawKeypoints(pose[0]);
     });
 }
 
@@ -85,8 +96,20 @@ async function init() {
             video.onloadedmetadata = function (e: unknown) {
                 video.play();
             };
-            const model = posedetection.SupportedModels.PoseNet;
-            const net = await posedetection.createDetector(model);
+            const modelString = "BlazePose";
+            const model = posedetection.SupportedModels.BlazePose;
+
+            let net;
+            if (modelString === "BlazePose") {
+                const detectorConfig = {
+                    runtime: "tfjs", // don't work 'mediepipe'
+                    modelType: "full",
+                    solutionPath: "base/node_modules/@mediapipe/pose",
+                };
+                net = await posedetection.createDetector(model, detectorConfig);
+            } else {
+                net = await posedetection.createDetector(model);
+            }
             return net;
         })
         .then(function (net) {
@@ -154,7 +177,7 @@ async function init() {
     loader.load(
         modelUrl,
         (gltf) => {
-            const vrm = gltf.userData.vrm;
+            const vrm: VRM = gltf.userData.vrm;
 
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
             VRMUtils.removeUnnecessaryJoints(gltf.scene);
@@ -163,10 +186,9 @@ async function init() {
             scene.add(vrm.scene);
             currentVrm = vrm;
 
-            const boneNode = vrm.humanoid?.getNormalizedBoneNode(
-                VRMHumanBoneName.Hips
-            );
-            if (boneNode !== null && boneNode !== undefined) {
+            const boneNode: THREE.Object3D<THREE.Event> | null =
+                vrm.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+            if (boneNode !== null) {
                 boneNode.rotation.y = Math.PI;
             }
         },
@@ -180,7 +202,7 @@ async function init() {
         (error: unknown) => console.error(error)
     );
 
-    const clock = new THREE.Clock();
+    const clock: THREE.Clock = new THREE.Clock();
     let angleStore: any = {};
     animate();
 
@@ -190,8 +212,12 @@ async function init() {
         const deltaTime = clock.getDelta();
 
         if (currentVrm) {
+            if (VRMposeStore) {
+                setPoseNodeBlaze(currentVrm, VRMposeStore);
+                // console.log("after currentVrm", currentVrm);
+            }
             if (poseStore) {
-                console.log("poseStore", poseStore);
+                // not in use
                 // OK
                 if (poseStore.left_shoulder && poseStore.right_shoulder) {
                     // spine & shoulder

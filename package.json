@@ -19,7 +19,7 @@
         "webpack-dev-server": "^4.11.1"
     },
     "dependencies": {
-        "@mediapipe/pose": "^0.5.1635988162",
+        "@mediapipe/pose": "~0.4.0",
         "@pixiv/three-vrm": "^1.0.3",
         "@tensorflow-models/pose-detection": "^2.0.0",
         "@tensorflow/tfjs": "^3.20.0",
@@ -27,6 +27,7 @@
         "@tensorflow/tfjs-converter": "^3.20.0",
         "@tensorflow/tfjs-core": "^3.20.0",
         "install": "^0.13.0",
+        "kalidokit": "^1.1.5",
         "three": "^0.144.0",
         "webpack": "^5.74.0"
     }
